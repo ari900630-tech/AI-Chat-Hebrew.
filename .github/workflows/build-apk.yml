@@ -12,15 +12,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
+
       - run: gradle --version
       - run: gradle clean assembleDebug
+
+      - name: Validate APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          test -s "$APK"
+          echo "APK size:"
+          ls -lh "$APK"
+          echo "APK type:"
+          file "$APK"
+          echo "APK archive test:"
+          unzip -t "$APK"
+          echo "APK contents:"
+          unzip -l "$APK" | head -40
+          test -n "$(unzip -Z1 "$APK" | grep -E '^AndroidManifest.xml$')"
+          test -n "$(unzip -Z1 "$APK" | grep -E '^classes.dex$')"
+          test -n "$(unzip -Z1 "$APK" | grep -E '^resources.arsc$')"
+          echo "APK SHA256:"
+          sha256sum "$APK"
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-chat-apk-${{ github.run_number }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Publish APK release
         uses: softprops/action-gh-release@v2
         with:
