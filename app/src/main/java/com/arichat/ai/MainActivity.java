@@ -24,7 +24,9 @@ public class MainActivity extends Activity {
     private static final String PREFS = "settings";
     private static final String API_KEY = "api_key";
     private static final String ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String DEFAULT_MODEL = "openai/gpt-oss-120b";\n    private static final String MODEL_PREF = "model";\n    private static final String[] MODEL_IDS = {
+    private static final String DEFAULT_MODEL = "openai/gpt-oss-120b";
+    private static final String MODEL_PREF = "model";
+    private static final String[] MODEL_IDS = {
             "openai/gpt-oss-120b",
             "openai/gpt-oss-20b",
             "openai/gpt-oss-safeguard-20b",
@@ -80,7 +82,8 @@ public class MainActivity extends Activity {
         t.setText(value);
         t.setTextSize(size);
         t.setTextColor(color);
-        t.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);\n        t.setTextDirection(View.TEXT_DIRECTION_RTL);
+        t.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+        t.setTextDirection(View.TEXT_DIRECTION_RTL);
         return t;
     }
 
@@ -88,7 +91,8 @@ public class MainActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.rgb(248,250,252));
-        root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);\n        root.setTextDirection(View.TEXT_DIRECTION_RTL);
+        root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        root.setTextDirection(View.TEXT_DIRECTION_RTL);
 
         LinearLayout header = new LinearLayout(this);
         header.setGravity(Gravity.CENTER_VERTICAL);
@@ -145,7 +149,9 @@ public class MainActivity extends Activity {
         input.setTextSize(16);
         input.setSingleLine(false);
         input.setMaxLines(4);
-        input.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);\n        input.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);\n        input.setTextDirection(View.TEXT_DIRECTION_RTL);
+        input.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+        input.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        input.setTextDirection(View.TEXT_DIRECTION_RTL);
         input.setBackgroundColor(Color.TRANSPARENT);
         input.setPadding(dp(12),0,dp(12),0);
         composer.addView(input, new LinearLayout.LayoutParams(0,dp(52),1));
@@ -237,7 +243,8 @@ public class MainActivity extends Activity {
 
         JSONObject body=new JSONObject();
         body.put("model",prefs.getString(MODEL_PREF,DEFAULT_MODEL));
-        body.put("temperature",0.7);\n        body.put("max_completion_tokens",1024);
+        body.put("temperature",0.7);
+        body.put("max_completion_tokens",1024);
         JSONArray arr=new JSONArray();
         JSONObject m=new JSONObject();
         m.put("role","user");
@@ -294,7 +301,11 @@ public class MainActivity extends Activity {
             ((AlertDialog) v.getTag()).dismiss();
             showHistory();
         });
-        addMenuItem(box,"בחירת מודל",v -> {\n            ((AlertDialog) v.getTag()).dismiss();\n            showModelPicker();\n        });\n        addMenuItem(box,"מפתח API",v -> {
+        addMenuItem(box,"בחירת מודל",v -> {
+            ((AlertDialog) v.getTag()).dismiss();
+            showModelPicker();
+        });
+        addMenuItem(box,"מפתח API",v -> {
             ((AlertDialog) v.getTag()).dismiss();
             showSettings();
         });
@@ -392,6 +403,14 @@ public class MainActivity extends Activity {
                 })
                 .setNegativeButton("ביטול",null).create();
         dialog.show();
+    }
+
+    private void showAbout() {
+        new AlertDialog.Builder(this)
+                .setTitle("אודות")
+                .setMessage("AI Chat — אפליקציית צ׳אט מבוססת Groq.\n\nבחר מודל מתפריט האפליקציה והוסף מפתח API כדי להתחיל.")
+                .setPositiveButton("סגור", null)
+                .show();
     }
 
     private void updateStatus() {
