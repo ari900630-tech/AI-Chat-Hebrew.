@@ -28,23 +28,15 @@ public class MainActivity extends Activity {
             "openai/gpt-oss-120b",
             "openai/gpt-oss-20b",
             "qwen/qwen3.8-27b",
-            "openai/gpt-oss-safeguard-20b",
             "minimaxai/minimax-m2.7",
-            "llama-3.3-70b-versatile",
-            "llama-3.1-8b-instant",
-            "canopylabs/orpheus-v1-english",
-            "canopylabs/orpheus-arabic-saudi"
+            "openai/gpt-oss-safeguard-20b"
     };
     private static final String[] MODEL_NAMES = {
             "GPT-OSS 120B — מתקדם",
             "GPT-OSS 20B — מהיר",
-            "Qwen 3.8 27B — ראייה וחשיבה",
-            "GPT-OSS Safeguard 20B — בטיחות",
-            "MiniMax M2.7",
-            "Llama 3.3 70B",
-            "Llama 3.1 8B",
-            "Orpheus English — קול",
-            "Orpheus Arabic Saudi — קול"
+            "Qwen 3.8 27B — חשיבה + ראייה",
+            "MiniMax M2.7 — מתקדם",
+            "GPT-OSS Safeguard 20B — בטיחות"
     };
 
     private LinearLayout messages;
