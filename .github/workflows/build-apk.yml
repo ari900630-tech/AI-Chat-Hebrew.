@@ -12,19 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-
       - run: gradle --version
-      - run: gradle clean assembleDebug
-
+      - name: Clean build
+        run: gradle --no-build-cache clean :app:assembleDebug
       - name: Validate APK
         shell: bash
         run: |
@@ -32,20 +29,23 @@ jobs:
           APK="app/build/outputs/apk/debug/app-debug.apk"
           test -f "$APK"
           test -s "$APK"
-          echo "APK size:"
           ls -lh "$APK"
-          echo "APK type:"
           file "$APK"
-          echo "APK archive test:"
           unzip -t "$APK"
-          echo "APK contents:"
-          unzip -l "$APK" | head -40
-          test -n "$(unzip -Z1 "$APK" | grep -E '^AndroidManifest.xml$')"
-          test -n "$(unzip -Z1 "$APK" | grep -E '^classes.dex$')"
-          test -n "$(unzip -Z1 "$APK" | grep -E '^resources.arsc$')"
-          echo "APK SHA256:"
+          echo "=== DEX files ==="
+          unzip -l "$APK" | grep -E 'classes([0-9]+)?\.dex$' || true
+          DEX_COUNT="$(unzip -Z1 "$APK" | grep -E '^classes([0-9]+)?\.dex$' | wc -l)"
+          test "$DEX_COUNT" -ge 1
+          unzip -Z1 "$APK" | grep -qx 'AndroidManifest.xml'
+          unzip -Z1 "$APK" | grep -qx 'resources.arsc'
+          unzip -Z1 "$APK" | grep -qx 'classes.dex'
+          SDK_AAPT2="$(find "$ANDROID_HOME" -type f -name aapt2 -perm -111 | head -1 || true)"
+          if [ -n "$SDK_AAPT2" ]; then
+            "$SDK_AAPT2" dump badging "$APK" | tee /tmp/badging.txt
+            grep -q "package: name='com.arichat.ai'" /tmp/badging.txt
+            grep -q "launchable-activity: name='com.arichat.ai.MainActivity'" /tmp/badging.txt
+          fi
           sha256sum "$APK"
-
       - name: Upload APK as workflow artifact
         uses: actions/upload-artifact@v4
         with:
@@ -53,7 +53,6 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
-
       - name: Publish APK release
         uses: softprops/action-gh-release@v2
         with:
