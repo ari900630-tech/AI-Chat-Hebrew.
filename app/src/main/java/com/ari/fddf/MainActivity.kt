@@ -9,6 +9,8 @@ import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import android.content.Context
+import android.text.InputType
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -20,6 +22,8 @@ class MainActivity : Activity() {
  private lateinit var scroll: ScrollView
  private lateinit var sendButton: TextView
  private val backendUrl = "https://fddf.vercel.app/api/chat"
+ private val prefs by lazy { getSharedPreferences("settings", Context.MODE_PRIVATE) }
+ private val groqUrl = "https://api.groq.com/openai/v1/chat/completions"
 
  private fun dp(v:Int)= (v*resources.displayMetrics.density).toInt()
  private fun bg(c:Int,r:Float)=GradientDrawable().apply{setColor(c);cornerRadius=r}
@@ -44,6 +48,16 @@ class MainActivity : Activity() {
    layoutDirection=View.LAYOUT_DIRECTION_RTL
   }
 
+  val menu=TextView(this).apply{
+   text="☰"
+   textSize=24f
+   gravity=Gravity.CENTER
+   setTextColor(Color.WHITE)
+   setPadding(0,0,0,dp(2))
+   setOnClickListener{showMenu(it)}
+  }
+  header.addView(menu,LinearLayout.LayoutParams(dp(48),dp(48)))
+
   val logo=TextView(this).apply{
    text="✦"
    textSize=25f
@@ -51,7 +65,8 @@ class MainActivity : Activity() {
    setTextColor(Color.WHITE)
    background=bg(Color.rgb(88,72,220),dp(15).toFloat())
   }
-  header.addView(logo,LinearLayout.LayoutParams(dp(48),dp(48)))
+  val logoParams=LinearLayout.LayoutParams(dp(48),dp(48)); logoParams.setMargins(dp(8),0,0,0)
+  header.addView(logo,logoParams)
 
   val titles=LinearLayout(this).apply{
    orientation=LinearLayout.VERTICAL
@@ -209,6 +224,57 @@ class MainActivity : Activity() {
   scroll.post{scroll.fullScroll(View.FOCUS_DOWN)}
  }
 
+ private fun showMenu(anchor:View){
+  val popup=PopupWindow(this)
+  val box=LinearLayout(this).apply{
+   orientation=LinearLayout.VERTICAL
+   setPadding(dp(8),dp(8),dp(8),dp(8))
+   background=bg(Color.WHITE,dp(16).toFloat())
+   elevation=dp(12).toFloat()
+   layoutDirection=View.LAYOUT_DIRECTION_RTL
+  }
+  fun item(label:String,action:()->Unit){
+   val v=TextView(this).apply{
+    text=label
+    textSize=16f
+    gravity=Gravity.RIGHT or Gravity.CENTER_VERTICAL
+    setTextColor(Color.rgb(35,39,50))
+    setPadding(dp(16),0,dp(16),0)
+    setOnClickListener{popup.dismiss();action()}
+   }
+   box.addView(v,LinearLayout.LayoutParams(dp(220),dp(50)))
+  }
+  item("שיחה חדשה"){
+   chat.removeAllViews()
+   showWelcome()
+  }
+  item("מפתח API"){
+   showApiKeyDialog()
+  }
+  item("אודות"){
+   AlertDialog.Builder(this).setTitle("AI Chat").setMessage("עוזר AI בעברית. גרסה 21.").setPositiveButton("סגור",null).show()
+  }
+  popup.contentView=box
+  popup.isFocusable=true
+  popup.setBackgroundDrawable(bg(Color.WHITE,dp(16).toFloat()))
+  popup.width=dp(236)
+  popup.height=WindowManager.LayoutParams.WRAP_CONTENT
+  popup.showAsDropDown(anchor,dp(8),dp(4),Gravity.START)
+ }
+
+ private fun showApiKeyDialog(){
+  val field=EditText(this).apply{
+   hint="הדבק כאן את מפתח Groq"
+   inputType=InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+   setText(prefs.getString("groq_key",""))
+  }
+  val box=LinearLayout(this).apply{setPadding(dp(22),0,dp(22),0);addView(field,LinearLayout.LayoutParams(-1,dp(56)))}
+  AlertDialog.Builder(this).setTitle("מפתח API").setMessage("המפתח נשמר במכשיר ומשמש את האפליקציה לשליחת השיחות ל-Groq.").setView(box)
+   .setNegativeButton("ביטול",null)
+   .setPositiveButton("שמירה"){_,_->prefs.edit().putString("groq_key",field.text.toString().trim()).apply()}
+   .show()
+ }
+
  private fun sendMessage(){
   val m=input.text.toString().trim()
   if(m.isEmpty() || !sendButton.isEnabled)return
@@ -220,17 +286,22 @@ class MainActivity : Activity() {
   val loading=chat.childCount-1
   thread{
    try{
-    val body=JSONObject().put("message",m)
-    val c=URL(backendUrl).openConnection() as HttpURLConnection
+    val key=prefs.getString("groq_key","")?.trim().orEmpty()
+    val useDirect=key.isNotEmpty()
+    val body=if(useDirect)
+      JSONObject().put("model","llama-3.1-8b-instant").put("messages",org.json.JSONArray().put(JSONObject().put("role","user").put("content",m)))
+    else JSONObject().put("message",m)
+    val c=URL(if(useDirect)groqUrl else backendUrl).openConnection() as HttpURLConnection
     c.connectTimeout=15000
     c.readTimeout=30000
     c.requestMethod="POST"
     c.setRequestProperty("Content-Type","application/json")
+    if(useDirect)c.setRequestProperty("Authorization","Bearer $key")
     c.doOutput=true
     c.outputStream.use{it.write(body.toString().toByteArray(Charsets.UTF_8))}
     val s=(if(c.responseCode in 200..299)c.inputStream else c.errorStream).bufferedReader().readText()
     if(c.responseCode !in 200..299)throw Exception("http")
-    val answer=JSONObject(s).optString("reply","לא התקבלה תשובה.")
+    val answer=if(useDirect) JSONObject(s).optJSONArray("choices")?.optJSONObject(0)?.optJSONObject("message")?.optString("content","לא התקבלה תשובה.") ?: "לא התקבלה תשובה." else JSONObject(s).optString("reply","לא התקבלה תשובה.")
     runOnUiThread{
      if(loading<chat.childCount)chat.removeViewAt(loading)
      addMessage(answer,false)
@@ -240,7 +311,7 @@ class MainActivity : Activity() {
    }catch(e:Exception){
     runOnUiThread{
      if(loading<chat.childCount)chat.removeViewAt(loading)
-     addMessage("לא ניתן להתחבר כרגע לשרת הבינה. נסה שוב בעוד רגע.",false)
+     addMessage("אירעה שגיאה בחיבור ל-AI. בדוק שהמפתח תקין ונסה שוב.",false)
      sendButton.isEnabled=true
      sendButton.alpha=1f
     }
