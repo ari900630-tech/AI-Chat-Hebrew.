@@ -1,5 +1,8 @@
 plugins { id 'com.android.application' }
 
+def buildNumber = System.getenv("GITHUB_RUN_NUMBER") ?: "23"
+def appVersionCode = buildNumber.toInteger()
+
 android {
     buildFeatures { buildConfig true }
     namespace 'com.arichat.ai'
@@ -8,7 +11,7 @@ android {
         applicationId 'com.arichat.ai'
         minSdk 23
         targetSdk 35
-        versionCode 23
-        versionName '1.0.23'
-        }
+        versionCode appVersionCode
+        versionName "1.0.${buildNumber}"
+    }
 }
