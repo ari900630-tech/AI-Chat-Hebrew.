@@ -27,16 +27,28 @@ public class MainActivity extends Activity {
     private static final String DEFAULT_MODEL = "openai/gpt-oss-120b";\n    private static final String MODEL_PREF = "model";\n    private static final String[] MODEL_IDS = {
             "openai/gpt-oss-120b",
             "openai/gpt-oss-20b",
+            "openai/gpt-oss-safeguard-20b",
             "qwen/qwen3.8-27b",
             "minimaxai/minimax-m2.7",
-            "openai/gpt-oss-safeguard-20b"
+            "meta-llama/llama-prompt-guard-2-22m",
+            "meta-llama/llama-prompt-guard-2-86m",
+            "whisper-large-v3",
+            "whisper-large-v3-turbo",
+            "canopylabs/orpheus-v1-english",
+            "canopylabs/orpheus-arabic-saudi"
     };
     private static final String[] MODEL_NAMES = {
-            "GPT-OSS 120B — מתקדם",
-            "GPT-OSS 20B — מהיר",
-            "Qwen 3.8 27B — חשיבה + ראייה",
-            "MiniMax M2.7 — מתקדם",
-            "GPT-OSS Safeguard 20B — בטיחות"
+            "GPT-OSS 120B — צ'אט + חשיבה + כלים",
+            "GPT-OSS 20B — צ'אט מהיר + חשיבה + כלים",
+            "GPT-OSS Safeguard 20B — בטיחות",
+            "Qwen 3.8 27B — צ'אט + ראייה + חשיבה",
+            "MiniMax M2.7 — צ'אט מתקדם",
+            "Llama Prompt Guard 2 22M — סינון",
+            "Llama Prompt Guard 2 86M — סינון",
+            "Whisper Large V3 — דיבור לטקסט",
+            "Whisper Large V3 Turbo — דיבור לטקסט מהיר",
+            "Orpheus English — טקסט לדיבור",
+            "Orpheus Arabic Saudi — טקסט לדיבור"
     };
 
     private LinearLayout messages;
