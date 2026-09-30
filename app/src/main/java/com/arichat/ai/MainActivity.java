@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
     private static final String PREFS = "settings";
     private static final String API_KEY = "api_key";
     private static final String ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String MODEL = "llama-3.3-70b-versatile";
+    private static final String MODEL = "openai/gpt-oss-120b";
 
     private LinearLayout messages;
     private EditText input;
@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
         t.setText(value);
         t.setTextSize(size);
         t.setTextColor(color);
-        t.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+        t.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);\n        t.setTextDirection(View.TEXT_DIRECTION_RTL);
         return t;
     }
 
@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.rgb(248,250,252));
-        root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);\n        root.setTextDirection(View.TEXT_DIRECTION_RTL);
 
         LinearLayout header = new LinearLayout(this);
         header.setGravity(Gravity.CENTER_VERTICAL);
@@ -120,7 +120,7 @@ public class MainActivity extends Activity {
         input.setTextSize(16);
         input.setSingleLine(false);
         input.setMaxLines(4);
-        input.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+        input.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);\n        input.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);\n        input.setTextDirection(View.TEXT_DIRECTION_RTL);
         input.setBackgroundColor(Color.TRANSPARENT);
         input.setPadding(dp(12),0,dp(12),0);
         composer.addView(input, new LinearLayout.LayoutParams(0,dp(52),1));
@@ -212,7 +212,7 @@ public class MainActivity extends Activity {
 
         JSONObject body=new JSONObject();
         body.put("model",MODEL);
-        body.put("temperature",0.7);
+        body.put("temperature",0.7);\n        body.put("max_completion_tokens",1024);
         JSONArray arr=new JSONArray();
         JSONObject m=new JSONObject();
         m.put("role","user");
@@ -250,40 +250,50 @@ public class MainActivity extends Activity {
     }
 
     private void showMenu(View anchor) {
-        PopupWindow popup = new PopupWindow(this);
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(dp(8),dp(8),dp(8),dp(8));
-        box.setBackground(bg(Color.WHITE,18));
-        box.setElevation(dp(10));
+        box.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        box.setTextDirection(View.TEXT_DIRECTION_RTL);
+        box.setPadding(dp(20), dp(8), dp(20), dp(8));
 
-        addMenuItem(box,"＋  שיחה חדשה",v -> {
-            popup.dismiss();
+        TextView title = text("תפריט", 20, Color.rgb(20,25,35));
+        title.setTypeface(null, Typeface.BOLD);
+        title.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+        box.addView(title, new LinearLayout.LayoutParams(-1, dp(58)));
+
+        addMenuItem(box,"שיחה חדשה",v -> {
+            ((AlertDialog) v.getTag()).dismiss();
             startNewChat();
         });
-        addMenuItem(box,"◷  השיחות שלך",v -> {
-            popup.dismiss();
+        addMenuItem(box,"השיחות שלך",v -> {
+            ((AlertDialog) v.getTag()).dismiss();
             showHistory();
         });
-        addMenuItem(box,"🔑  מפתח API",v -> {
-            popup.dismiss();
+        addMenuItem(box,"מפתח API",v -> {
+            ((AlertDialog) v.getTag()).dismiss();
             showSettings();
         });
-        addMenuItem(box,"ℹ  אודות",v -> {
-            popup.dismiss();
-            new AlertDialog.Builder(this)
-                    .setTitle("אודות AI Chat")
-                    .setMessage("AI Chat — צ׳אט בינה מלאכותית בעברית.")
-                    .setPositiveButton("סגור",null).show();
+        addMenuItem(box,"אודות",v -> {
+            ((AlertDialog) v.getTag()).dismiss();
+            showAbout();
         });
 
-        popup.setContentView(box);
-        popup.setWidth(dp(245));
-        popup.setHeight(-2);
-        popup.setBackgroundDrawable(bg(Color.WHITE,18));
-        popup.setOutsideTouchable(true);
-        popup.setFocusable(true);
-        popup.showAsDropDown(anchor, -dp(190), dp(6));
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(box)
+                .create();
+
+        for (int i = 1; i < box.getChildCount(); i++) {
+            box.getChildAt(i).setTag(dialog);
+        }
+        dialog.setOnShowListener(d -> {
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(dp(310), -2);
+            }
+        });
+        dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(dp(310), -2);
+        }
     }
 
     private void addMenuItem(LinearLayout box,String label,View.OnClickListener listener) {
