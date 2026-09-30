@@ -8,8 +8,8 @@ android {
         applicationId 'com.arichat.ai'
         minSdk 23
         targetSdk 35
-        versionCode 1
-        versionName '1.0'
+        versionCode 18
+        versionName '1.0.18'
         buildConfigField 'String', 'GROQ_API_KEY', '"' + (System.getenv('GROQ_API_KEY') ?: '') + '"'
     }
 }
