@@ -15,7 +15,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - run: gradle assembleDebug
+      - run: gradle --version
+      - run: gradle clean assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: AIChat-debug-apk
