@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
     private static final String PREFS = "settings";
     private static final String API_KEY = "api_key";
     private static final String ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String MODEL = "openai/gpt-oss-120b";
+    private static final String DEFAULT_MODEL = "openai/gpt-oss-120b";\n    private static final String MODEL_PREF = "model";\n    private static final String[] MODEL_IDS = {\n            "openai/gpt-oss-120b",\n            "openai/gpt-oss-20b",\n            "qwen/qwen3.8-27b"\n    };\n    private static final String[] MODEL_NAMES = {\n            "GPT-OSS 120B — חזק ומתקדם",\n            "GPT-OSS 20B — מהיר",\n            "Qwen 3.8 27B — חשיבה והוראות"\n    };
 
     private LinearLayout messages;
     private EditText input;
@@ -211,7 +211,7 @@ public class MainActivity extends Activity {
         c.setDoOutput(true);
 
         JSONObject body=new JSONObject();
-        body.put("model",MODEL);
+        body.put("model",prefs.getString(MODEL_PREF,DEFAULT_MODEL));
         body.put("temperature",0.7);\n        body.put("max_completion_tokens",1024);
         JSONArray arr=new JSONArray();
         JSONObject m=new JSONObject();
@@ -269,7 +269,7 @@ public class MainActivity extends Activity {
             ((AlertDialog) v.getTag()).dismiss();
             showHistory();
         });
-        addMenuItem(box,"מפתח API",v -> {
+        addMenuItem(box,"בחירת מודל",v -> {\n            ((AlertDialog) v.getTag()).dismiss();\n            showModelPicker();\n        });\n        addMenuItem(box,"מפתח API",v -> {
             ((AlertDialog) v.getTag()).dismiss();
             showSettings();
         });
@@ -306,6 +306,32 @@ public class MainActivity extends Activity {
         b.setPadding(dp(10),0,dp(10),0);
         b.setOnClickListener(listener);
         box.addView(b,new LinearLayout.LayoutParams(-1,dp(52)));
+    }
+
+    private void showModelPicker() {
+        String current = prefs.getString(MODEL_PREF, DEFAULT_MODEL);
+        int checked = 0;
+        for (int i = 0; i < MODEL_IDS.length; i++) {
+            if (MODEL_IDS[i].equals(current)) { checked = i; break; }
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("בחירת מודל")
+                .setSingleChoiceItems(MODEL_NAMES, checked, (d, which) -> {
+                    prefs.edit().putString(MODEL_PREF, MODEL_IDS[which]).apply();
+                    d.dismiss();
+                    updateStatus();
+                    Toast.makeText(this, "המודל נבחר: " + MODEL_NAMES[which], Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("ביטול", null)
+                .create();
+        dialog.setOnShowListener(d -> {
+            if (dialog.getListView() != null) {
+                dialog.getListView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+                dialog.getListView().setTextDirection(View.TEXT_DIRECTION_RTL);
+            }
+        });
+        dialog.show();
     }
 
     private void startNewChat() {
