@@ -24,7 +24,28 @@ public class MainActivity extends Activity {
     private static final String PREFS = "settings";
     private static final String API_KEY = "api_key";
     private static final String ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String DEFAULT_MODEL = "openai/gpt-oss-120b";\n    private static final String MODEL_PREF = "model";\n    private static final String[] MODEL_IDS = {\n            "openai/gpt-oss-120b",\n            "openai/gpt-oss-20b",\n            "qwen/qwen3.8-27b"\n    };\n    private static final String[] MODEL_NAMES = {\n            "GPT-OSS 120B — חזק ומתקדם",\n            "GPT-OSS 20B — מהיר",\n            "Qwen 3.8 27B — חשיבה והוראות"\n    };
+    private static final String DEFAULT_MODEL = "openai/gpt-oss-120b";\n    private static final String MODEL_PREF = "model";\n    private static final String[] MODEL_IDS = {
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "qwen/qwen3.8-27b",
+            "openai/gpt-oss-safeguard-20b",
+            "minimaxai/minimax-m2.7",
+            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant",
+            "canopylabs/orpheus-v1-english",
+            "canopylabs/orpheus-arabic-saudi"
+    };
+    private static final String[] MODEL_NAMES = {
+            "GPT-OSS 120B — מתקדם",
+            "GPT-OSS 20B — מהיר",
+            "Qwen 3.8 27B — ראייה וחשיבה",
+            "GPT-OSS Safeguard 20B — בטיחות",
+            "MiniMax M2.7",
+            "Llama 3.3 70B",
+            "Llama 3.1 8B",
+            "Orpheus English — קול",
+            "Orpheus Arabic Saudi — קול"
+    };
 
     private LinearLayout messages;
     private EditText input;
