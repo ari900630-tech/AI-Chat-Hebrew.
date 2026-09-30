@@ -18,7 +18,7 @@ class MainActivity : Activity() {
  private lateinit var input: EditText
  private lateinit var chat: LinearLayout
  private lateinit var scroll: ScrollView
- private val backendUrl = "https://fddf.vercel.app/api/chat"
+ private val groqUrl = "https://api.groq.com/openai/v1/chat/completions"
  private fun dp(v:Int)= (v*resources.displayMetrics.density).toInt()
  private fun bg(c:Int,r:Float)=GradientDrawable().apply{setColor(c);cornerRadius=r}
 
@@ -94,17 +94,25 @@ class MainActivity : Activity() {
   val loading=chat.childCount-1
   thread{
    try{
-    val body=JSONObject().put("message",m)
-    val c=URL(backendUrl).openConnection() as HttpURLConnection
+    val key=BuildConfig.GROQ_API_KEY
+    if(key.isBlank()) throw Exception("GROQ_API_KEY is missing")
+    val body=JSONObject()
+      .put("model","llama-3.1-8b-instant")
+      .put("messages",org.json.JSONArray().put(JSONObject().put("role","user").put("content",m)))
+    val c=URL(groqUrl).openConnection() as HttpURLConnection
     c.connectTimeout=15000;c.readTimeout=30000
-    c.requestMethod="POST";c.setRequestProperty("Content-Type","application/json");c.doOutput=true
+    c.requestMethod="POST"
+    c.setRequestProperty("Authorization","Bearer $key")
+    c.setRequestProperty("Content-Type","application/json")
+    c.doOutput=true
     c.outputStream.use{it.write(body.toString().toByteArray(Charsets.UTF_8))}
     val s=(if(c.responseCode in 200..299)c.inputStream else c.errorStream).bufferedReader().readText()
     if(c.responseCode !in 200..299)throw Exception(s)
-    val answer=JSONObject(s).optString("reply","לא התקבלה תשובה.")
+    val answer=JSONObject(s).optJSONArray("choices")?.optJSONObject(0)?.optJSONObject("message")?.optString("content")
+      ?: "לא התקבלה תשובה."
     runOnUiThread{if(loading<chat.childCount)chat.removeViewAt(loading);addMessage(answer,false);send.isEnabled=true}
    }catch(e:Exception){
-    runOnUiThread{if(loading<chat.childCount)chat.removeViewAt(loading);addMessage("לא ניתן להתחבר כרגע לשרת. בדוק שהשרת פעיל.",false);send.isEnabled=true}
+    runOnUiThread{if(loading<chat.childCount)chat.removeViewAt(loading);addMessage("לא ניתן להתחבר ל-Groq כרגע. בדוק שהמפתח פעיל ושיש חיבור לאינטרנט.",false);send.isEnabled=true}
    }
   }
  }
