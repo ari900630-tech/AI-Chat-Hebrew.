@@ -22,11 +22,23 @@ jobs:
       - run: gradle --version
       - name: Clean build
         run: gradle --no-build-cache clean :app:assembleDebug
+      - name: Prepare installable APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="app/build/outputs/apk/debug/app-debug.apk"
+          APK="AI-Chat-Hebrew.apk"
+          test -f "$SRC"
+          test -s "$SRC"
+          cp "$SRC" "$APK"
+          chmod 644 "$APK"
+          ls -lh "$SRC" "$APK"
+
       - name: Validate APK
         shell: bash
         run: |
           set -euo pipefail
-          APK="app/build/outputs/apk/debug/app-debug.apk"
+          APK="AI-Chat-Hebrew.apk"
           test -f "$APK"
           test -s "$APK"
           ls -lh "$APK"
@@ -50,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ai-chat-apk-${{ github.run_number }}
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: AI-Chat-Hebrew.apk
           if-no-files-found: error
           retention-days: 14
       - name: Publish APK release
@@ -58,6 +70,6 @@ jobs:
         with:
           tag_name: apk-${{ github.run_number }}
           name: AI Chat APK ${{ github.run_number }}
-          files: app/build/outputs/apk/debug/app-debug.apk
+          files: AI-Chat-Hebrew.apk
           generate_release_notes: false
           make_latest: true
