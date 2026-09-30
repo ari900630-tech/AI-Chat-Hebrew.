@@ -1,4 +1,4 @@
-package com.ariched.ai
+package com.arichat.ai
 
 import android.app.Activity
 import android.os.Bundle
