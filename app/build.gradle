@@ -4,14 +4,28 @@ def buildNumber = System.getenv("GITHUB_RUN_NUMBER") ?: "23"
 def appVersionCode = buildNumber.toInteger()
 
 android {
-    buildFeatures { buildConfig true }
     namespace 'com.arichat.ai'
     compileSdk 35
+    buildFeatures { buildConfig true }
     defaultConfig {
         applicationId 'com.arichat.ai'
         minSdk 23
         targetSdk 35
         versionCode appVersionCode
         versionName "1.0.${buildNumber}"
+    }
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+        }
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            shrinkResources false
+            debuggable true
+        }
     }
 }
